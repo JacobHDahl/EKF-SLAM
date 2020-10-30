@@ -1,0 +1,555 @@
+\newcommand{\mat}[1]{\mathbf{#1}}               % 1-argument command for matrices (and possibly also vectors).
+\newcommand{\matg}[1]{\bm{#1}}               % 1-argument command for matrices (and possibly also vectors).
+
+\newcommand{\fnuttv}{\textquotedblleft}
+\newcommand{\fnutth}{\textquotedblright}
+
+\newcommand{\atantwo}{\mathrm{atan2}}
+
+\newcommand{\card}{\mathrm{card}}
+\newcommand{\PD}{P_{\mathrm{D}}}
+\newcommand{\PS}{P_{\mathrm{S}}}
+\newcommand{\PG}{P_{\mathrm{G}}}
+\newcommand{\PFA}{P_{\mathrm{FA}}}
+\newcommand{\zFea}{\bm{\zeta}}
+\newcommand{\zKine}{\bm{z}}
+\newcommand{\texture}{\eta}
+\newcommand{\textureHat}{\hat{\eta}}
+\newcommand{\qs}{\texture}
+\newcommand{\rs}{\textureHat}
+\newcommand{\processnoise}{\mat{v}}
+\newcommand{\meanoise}{\mat{w}}
+\newcommand{\wavespeed}{\vartheta}
+\newcommand{\imag}{\mathrm{i}}
+%\newcommand{\transpose}{\intercal}
+\newcommand{\transpose}{\mathsf{T}}
+\newcommand{\power}{x}
+\newcommand{\detsuper}{a} % Subscript for after threshold amplitude densities
+\newcommand{\measuper}{z} % Subscript for after threshold amplitude densities
+\newcommand{\threshold}{t}
+\newcommand{\bearing}{\vartheta}
+\newcommand{\numaux}{M}
+\newcommand{\hypozero}{\mathcal{H}_0}
+\newcommand{\hypoone}{\mathcal{H}_1}
+\newcommand{\ampstate}{\varsigma}
+
+
+% #1: k
+% #2: z or a
+% #3: s
+% #4: i
+\newcommand{\lri}[4]{l_{#1}^{#2 #3}(#4)}
+
+% #1: s
+% #2: i
+\newcommand{\lrzi}[2]{l_{k}^{\measuper #1}(#2)}
+% # : i
+\newcommand{\lrai}[1]{l_{k}^{\detsuper}(#1)}
+
+% #1: k (or empty)
+% #2: i
+\newcommand{\lrw}[2]{l_{#1}(#2)}
+
+% #1: \targetsub or \bcgsub
+% #2: i
+\newcommand{\pdfzi}[2]{p_{#1 k}^{\measuper}(#2)}
+% #1: \targetsub or \bcgsub
+% #2: i
+\newcommand{\pdfai}[2]{p_{#1 k}^{\detsuper}(#2)}
+% #1: \targetsub or \bcgsub
+% #2: s
+% #3: i
+\newcommand{\pdfzs}[3]{p_{#1 k}^{\detsuper #2}(#3)}
+
+
+
+
+% New commands for chapter 4
+
+\newcommand{\kalmangain}{\mathbf{W}}
+\newcommand{\innov}{\bm{\nu}}
+%\newcommand{\zdim}{M}
+%\newcommand{\threshold}{T}
+\newcommand{\radial}{\varrho}
+\newcommand{\diagz}{\bm{\xi}}
+
+
+% New commands for chapter 5
+
+\newcommand{\lwprod}{\prod_{j=1}^{m_k} l_w^j}
+\newcommand{\loneprod}{\prod_{j=1}^{m_k} l_1^j}
+\newcommand{\bcgsub}{0}
+\newcommand{\wakesub}{w}
+\newcommand{\targetsub}{1}
+\newcommand{\clutterization}{{\mathrm{n}}}
+
+\newcommand{\wakization}{{\psi}}
+\newcommand{\bcgization}{{\varphi}}
+\newcommand{\measurization}{\underline{\mathrm{m}}}
+\newcommand{\wakeX}{{\tilde{x}}}
+\newcommand{\wakeY}{{\tilde{y}}}
+\newcommand{\wakeratio}{{r}}
+\newcommand{\diagonalization}{{\bm{\Lambda}}}
+\newcommand{\assub}{a}
+\newcommand{\truesub}{s}
+\newcommand{\wakewidth}{A}
+\newcommand{\wakelength}{B}
+% #1: \bcgsub, \wakesub, \targetsub or m
+% #2: i
+\newcommand{\pdfi}[2]{p_{#1}(#2)}
+
+% Pdfs and pmfs
+
+\newcommand{\bernoulli}{\mathrm{Bernoulli}}
+\newcommand{\exponential}{\mathrm{Exponential}}
+\newcommand{\gammapdf}{\mathrm{Gamma}}
+\newcommand{\gammacdf}{\mathrm{Gammacdf}}
+\newcommand{\kcdf}{\mathrm{Kcdf}}
+\newcommand{\kpdf}{\mathrm{Kpdf}}
+\newcommand{\ncdf}{\mathrm{ncdf}}
+\newcommand{\npdf}{{\mathcal N}}
+\newcommand{\cnpdf}{\mathcal{N}_c}
+\newcommand{\poisson}{\mathrm{Poisson}}
+\newcommand{\rayleigh}{\mathrm{Rayleigh}}
+\newcommand{\rice}{\mathrm{Rice}}
+\newcommand{\uniform}{\mathrm{Uniform}}
+\newcommand{\cluttermu}{\mu}
+
+
+% New commands for attitude report
+
+\newcommand{\bodySuper}{\mathrm{body}}
+
+% New commands for FLS report
+
+\newcommand{\meter}{\,{\mathrm m}}
+\newcommand{\second}{\,{\mathrm s}}
+
+% New commands for CRLB report
+
+\newcommand{\true}{\mathrm{true}}
+%\newcommand{\bgreen}{\bm{e}}
+%\newcommand{\Bgreen}{\bm{E}}
+%%\newcommand{\pose}{\bm{\eta}}
+%\newcommand{\pose}{\xi}
+\newcommand{\posemu}{\bm{\mu}}
+%\newcommand{\posep}{\bm{P}}
+%\newcommand{\bodyv}{\bm{v}}
+\newcommand{\paramvec}{\bm{q}}
+%\newcommand{\paramex}{\bm{\xi}}
+%\newcommand{\vartime}{t}
+%\newcommand{\mea}{\bm{z}}
+\newcommand{\surge}{u}
+\newcommand{\sway}{v}
+\newcommand{\heave}{w}
+\newcommand{\rollrate}{p}
+\newcommand{\pitchrate}{q}
+\newcommand{\yawrate}{r}
+\newcommand{\roll}{\phi}
+\newcommand{\pitch}{\theta}
+\newcommand{\yaw}{\psi}
+\newcommand{\crlb}{\mathrm{CRLB}}
+\newcommand{\fisher}{\bm{J}}
+\newcommand{\jac}{\mathcal{D}}
+%\newcommand{\target}{\bm{x}}
+\newcommand{\range}{r}
+\newcommand{\meamap}{\bm{h}}
+\newcommand{\cp}{\bm{g}}
+\newcommand{\ffun}{\bm{f}}
+\newcommand{\rotmat}{{\mathsf R}}
+\newcommand{\smat}{\mathsf{S}}
+\newcommand{\meastack}{\tilde{\bm{z}}}
+\newcommand{\meamapstack}{\tilde{\bm{h}}}
+\newcommand{\meacovstack}{\tilde{\bm{R}}}
+\newcommand{\meacov}{{\mathbf R}}
+\newcommand{\jacstack}{\tilde{\bm{H}}}
+\newcommand{\radius}{\rho}
+\newcommand{\ctop}{{\bf f}}
+%\newcommand{\prectop}{{\bm g}}
+\newcommand{\prectop}{{\bf g}}
+\newcommand{\xSet}{{\bm X}}
+\newcommand{\ySet}{{\bm Y}}
+\newcommand{\zSet}{{Z}}
+\newcommand{\wSet}{{\bm W}}
+\newcommand{\oSet}{{\bm O}}
+\newcommand{\omegaSet}{{\bm \Omega}}
+\newcommand{\gammaSet}{{\bm \Gamma}}
+\newcommand{\upsilonSet}{{\bm \Upsilon}}
+\newcommand{\cSet}{{\bm C}}
+\newcommand{\PC}{P_{\mathrm{C}}}
+
+%% New environments
+%\theoremstyle{definition}
+%\newtheorem{ex}[subsection]{\bfseries\scshape Example}
+%\newtheorem*{ex*}{\bfseries\scshape Example}
+%\newtheorem{defn}[subsection]{\bfseries\scshape Definition}
+%\newtheorem*{defn*}{\bfseries\scshape Definition}
+%\newtheorem{claim}[subsection]{\bfseries\scshape Claim}
+%\newtheorem*{claim*}{\bfseries\scshape Claim}
+%
+%\theoremstyle{remark}
+%\newtheorem{rem}[subsection]{\bfseries\scshape Remark}
+\newtheorem{rem}{\bfseries\scshape Remark}
+\newtheorem{prop}{\bfseries\scshape Proposition}
+%\newtheorem*{prop*}{\bfseries\scshape Proposition}
+
+%
+%\theoremstyle{plain}
+%\newtheorem{thm}[subsection]{\bfseries\scshape Theorem}
+%\newtheorem*{thm*}{\bfseries\scshape Theorem}
+%\newtheorem{prop}[subsection]{\bfseries\scshape Proposition}
+%\newtheorem*{prop*}{\bfseries\scshape Proposition}
+%\newtheorem{lemma}[subsection]{\bfseries\scshape Lemma}
+%\newtheorem*{lemma*}{\bfseries\scshape Lemma}
+%\newtheorem{lem}{\bfseries\scshape Lemma}
+%\newtheorem{cor}[subsection]{\bfseries\scshape Corollary}
+%\newtheorem*{cor*}{\bfseries\scshape Corollary}
+
+\newcommand{\betaGR}{\hat{\beta}}
+\newcommand{\psiGR}{\hat{\beta}}
+\newcommand{\phiGR}{\hat{\phi}}
+\newcommand{\thetaGR}{\hat{\theta}}
+
+% New commands for tentative Fusion paper
+
+\newcommand{\der}{{\mathrm d}}
+\newcommand{\lev}{\theta}
+\newcommand{\pev}{\pi}
+\newcommand{\config}{\gamma}
+
+
+
+
+% New commands for tentative Aerospace paper
+
+\newcommand{\pgfl}{{p.g.fl.\@}}
+\newcommand{\expo}{{\mathrm exp}}
+\newcommand{\reals}{{\mathbb R}}
+
+
+\newcommand{\dSet}{{\Xi}}
+\newcommand{\dSetization}{X}
+\newcommand{\pSet}{{\Upsilon}}
+\newcommand{\pSetization}{E}
+
+
+%\newcommand{\dSet}{\Upsilon}
+%\newcommand{\dSetization}{{\Xi}}
+%\newcommand{\pSet}{X}
+%\newcommand{\pSetization}{E}
+
+
+%\newcommand{\target}{\xi}
+%\newcommand{\pose}{\eta}
+\newcommand{\lm}{\mat{m}}
+\newcommand{\daughter}{\lm}
+\newcommand{\target}{x}
+\newcommand{\pose}{\bm{\eta}}
+\newcommand{\parent}{\eta}
+\newcommand{\pcdot}{\, \tilde{\parent}_k \,}
+\newcommand{\ppdot}{\, \tilde{\parent}_{k-1} \,}
+\newcommand{\tpdot}{\, \tilde{\target}_{k-1} \,}
+\newcommand{\tcdot}{\, \tilde{\target}_{k} \,}
+
+\newcommand{\clusterprocess}{{\mathbb X}}
+\newcommand{\mSet}{\Sigma}
+\newcommand{\mSetization}{Z}
+
+\newcommand{\birth}{\mu}
+\newcommand{\mea}{\mat{z}}
+%\newcommand{\clusterprocess}{{\mathbb X}}
+
+\newcommand{\birthSet}{\Gamma}
+\newcommand{\surviveSet}{\Psi}
+\newcommand{\newPSet}{\Phi}
+\newcommand{\clutterSet}{K}
+\newcommand{\tOSet}{\Theta}
+\newcommand{\nPSet}{\Omega}
+
+
+\newcommand{\cluttercount}{{\varphi}}
+\newcommand{\detectedcount}{{\delta}}
+\newcommand{\targetcount}{{\xi}}
+
+\newcommand{\will}{{a}}
+\newcommand{\reid}{{b}}
+
+\newcommand{\fPose}{{\mathbf F}}
+\newcommand{\fLm}{{\mathbf G}}
+\newcommand{\hPose}{{\mathbf H}}
+\newcommand{\hLm}{{\mathbf A}}
+\newcommand{\qPose}{{\mathbf Q}}
+\newcommand{\qLm}{{\mathbf U}}
+\newcommand{\pPose}{{\mathbf P}^{\pose}}
+\newcommand{\pLm}{{\mathbf P}^{\lm}}
+\newcommand{\lmPoseMat}{{\mathbf B}}
+\newcommand{\lmNonPoseEst}{b}
+
+\newcommand{\pDim}{\tau}
+\newcommand{\dDim}{d}
+\newcommand{\zDim}{s}
+
+\newcommand{\aSet}[1]{{\mathcal A}_{#1}}
+\newcommand{\rSet}[1]{{\mathcal B}_{#1}}
+\newcommand{\tSet}[1]{{\mathcal T}_{#1}}
+
+\newcommand{\sd}{f}
+\newcommand{\fz}{f_{\mea}}
+\newcommand{\fc}{f_{c}} % Clutter spatial pdf
+%\newcommand{\lambdafa}{\lambda^{\mathrm fa}}
+\newcommand{\lambdafa}{\lambda}
+\newcommand{\lambdastar}{v^*}
+\newcommand{\flm}{f_{\sv}}
+\newcommand{\feta}{f_{\pose}}
+%\newcommand{\fx}{f_{\parent}}
+\newcommand{\fx}{f_{\sv}}
+\newcommand{\ppdf}{f}
+%\newcommand{\lambdau}{\lambda^{\mathrm u}}
+\newcommand{\lambdau}{v}
+\newcommand{\lambdam}{v^m} % Mullane PHD
+\newcommand{\partnumber}{q}
+\newcommand{\npart}{N_p}
+\newcommand{\idmat}{{\mathbf I}}
+\newcommand{\zeromat}{{\mathbf 0}}
+
+% TK8102 Commands
+
+\newcommand{\statecont}{{\mathbf x}}
+
+%\newcommand{\mea}{\mathbf{z}}
+%\newcommand{\mea}{z}
+\newcommand{\statey}{{\mathbf y}}
+\newcommand{\xHat}[1]{\mathbf{\hat{x}}_{#1}}
+\newcommand{\xBar}[1]{\mathbf{\hat{x}}_{#1|#1-1}}
+\newcommand{\pHat}[1]{\mathbf{P}_{#1}}
+%\newcommand{\pBar}[1]{\mathbf{\bar{P}}_{#1}}
+\newcommand{\pBar}[1]{\mathbf{P}_{#1|#1-1}}
+\newcommand{\sBar}[1]{\mathbf{S}_{#1}}
+\newcommand{\zBar}[1]{\mat{\hat{z}}_{#1|#1-1}}
+\newcommand{\qMat}{Q}
+\newcommand{\qMatCont}{\mat{D}}
+\newcommand{\fMat}{\mathbf{F}}
+\newcommand{\hmat}{\mathbf{H}}
+\newcommand{\hMat}{\mathbf{H}}
+%\newcommand{\meacov}{\mat{R}}
+\newcommand{\processcov}{\mat{Q}}
+\newcommand{\pCap}{\mathbf{P}}
+\newcommand{\ux}{\mea}
+\newcommand{\uy}{\statecont}
+\newcommand{\uz}{\mathbf{\bar{x}}}
+\newcommand{\ua}{\mathbf{\bar{z}}}
+\newcommand{\ub}{\mathbf{\hat{x}}}
+\newcommand{\uX}{\mathbf{H}}
+\newcommand{\uY}{\mathbf{R}}
+\newcommand{\uZ}{\mathbf{\bar{P}}}
+\newcommand{\uA}{\mathbf{S}}
+\newcommand{\uB}{\mathbf{\hat{P}}}
+\newcommand{\uW}{\mathbf{W}}
+\newcommand{\ubstar}{\statecont^*}
+\newcommand{\mRistic}{\mathbf{m}}
+%\newcommand{\xSet}{\mathbf{X}}
+%\newcommand{\ySet}{\mathbf{Y}}
+%\newcommand{\zSet}{\mathbf{Z}}
+%\newcommand{\zSet}{\mathcal{Z}}
+%\newcommand{\kalmangain}{\mathbf{W}}
+%\newcommand{\innov}{\bm{\nu}}
+%\newcommand{\ffun}{\mathbf{f}}
+\newcommand{\hfun}{\mathbf{h}}
+\newcommand{\gfun}{\mathbf{g}}
+
+
+% Tracking book commands
+
+
+\newcommand{\expectation}{\mu}
+\newcommand{\expectationvec}{\mat{\mu}}
+\newcommand{\covmat}{\pCap}
+\newcommand{\infomat}{\matg{\Lambda}}
+\newcommand{\infostate}{\matg{\eta}}
+\newcommand{\xcov}{\pCap_{xx}}
+\newcommand{\ycov}{\pCap_{yy}}
+\newcommand{\ccov}{\pCap_{xy}}
+%\newcommand{\xcov}{\mat{A}}
+%\newcommand{\ycov}{\mat{D}}
+%\newcommand{\ccov}{\mat{C}}
+\newcommand{\xinfo}{\infomat_{xx}}
+\newcommand{\yinfo}{\infomat_{yy}}
+\newcommand{\cinfo}{\infomat_{xy}}
+
+\newcommand{\sv}{\statecont}
+\newcommand{\pos}{\bm{\rho}}
+\newcommand{\vel}{\mathbf{v}}
+\newcommand{\acc}{\mathbf{a}}
+
+\newcommand{\pdf}{p}
+\newcommand{\cdf}{P}
+\newcommand{\pmf}{\pdf}
+
+\newcommand{\prob}{\mathrm{Pr}}
+
+\newcommand{\transmat}{\mat{F}}
+\newcommand{\qdisc}{\mat{Q}}
+\newcommand{\disco}{\Delta} % Discretization time interval t_k - t_{k-1}
+
+\newcommand{\iid}{i.i.d.}
+
+\newcommand{\binopdf}[3]{\binom{#2}{#1}#3^{#1} (1-#3)^{#2-#1}}
+
+\newcommand{\clutterRate}{\Lambda}
+\newcommand{\clutterin}{\lambda}
+\newcommand{\valgate}{\mathcal{G}}
+\newcommand{\assocPDA}[2]{\theta_{#1}^{#2}}
+\newcommand{\betaPDA}[2]{\beta_{#1}^{#2}}
+\newcommand{\ePDA}[2]{e_{#1}^{#2}}
+\newcommand{\lPDA}[2]{l_{#1}^{#2}} % PDAF likelihood ratios in likelihood-ratio formulation of PDAF based on wake-article.
+\newcommand{\innovPDA}[2]{\innov_{#1}^{#2}}
+\newcommand{\meaPDA}[2]{\mea_{#1}^{#2}}
+\newcommand{\xHatPDA}[2]{\hat{\sv}_{#1}^{#2}}
+\newcommand{\pHatPDA}[2]{\mathbf{\hat{P}}_{#1}^{#2}}
+\newcommand{\kalmanPDA}[2]{\kalmangain_{#1}^{#2}}
+
+\newcommand{\rvx}{X}
+\newcommand{\rvy}{Y}
+
+\newcommand{\oSpace}{\mathbb{O}} % Outcome space
+\newcommand{\pMeasure}{P} % Probability measure
+
+
+% IMM commands
+
+\newcommand{\fMM}[1]{\mat{f}^{(#1)}}
+\newcommand{\qMM}[1]{\mat{Q}^{(#1)}}
+\newcommand{\hMM}[1]{\mat{h}^{(#1)}}
+\newcommand{\rMM}[1]{\mat{R}^{(#1)}}
+\newcommand{\HMM}[1]{\mathbf{H}^{(#1)}}
+
+\newcommand{\nowMode}{s_k}
+\newcommand{\prevMode}{s_{k-1}}
+\newcommand{\oldModes}{a}
+
+% Stochastic processes commands
+
+\newcommand{\spr}{\mat{x}}
+\newcommand{\spry}{\mat{y}}
+\newcommand{\acf}{R}
+\newcommand{\sysmat}{\mat{A}}
+\newcommand{\pnoisemat}{\mat{G}}
+\newcommand{\heaviside}{u}
+\newcommand{\wiener}{b}
+\newcommand{\psd}{S}
+\newcommand{\pnoisecont}{\mat{n}}
+\newcommand{\inpucont}{\mat{u}}
+\newcommand{\inpu}{\mat{u}}
+\newcommand{\inpumat}{\mat{B}}
+
+% IPDA commands
+
+%\newcommand{\exi}{\epsilon}
+\newcommand{\exi}{r}
+
+% JPDA commands
+
+\newcommand{\tConfig}{\bm{\tau}}
+\newcommand{\detEvent}{\tConfig}
+\newcommand{\reward}{\mat{A}}
+
+% MHT chapter commands
+
+\newcommand{\reidNumber}{\gamma}
+\newcommand{\reidConfig}{\tau}
+\newcommand{\newtarcount}{\beta}
+\newcommand{\ntgt}{N_{\mathrm{TGT}}}
+
+\newcommand{\xpos}{x}
+\newcommand{\ypos}{y}
+\newcommand{\xvel}{v_x}
+\newcommand{\yvel}{v_y}
+
+\newcommand{\class}{C}  % The discrete random estimatee
+\newcommand{\classization}{c}  % The discrete random estimatee
+\newcommand{\data}{\Delta}  % The generic data
+%\newcommand{\data}{Z^k}  % The generic data
+%\newcommand{\datazation}{D}  % The generic data
+\newcommand{\datazation}[1]{Z^{#1}}  % The generic data
+\newcommand{\hindex}{t}  % The generic data
+\newcommand{\tindex}{t}  % Target number
+
+\newcommand{\birthVal}{b}
+\newcommand{\lambdauVal}{\lambdau}
+\newcommand{\indicator}{1}
+
+\newcommand{\assignment}{\psi}
+\newcommand{\sregion}{\Omega}
+\newcommand{\descent}{d}
+\newcommand{\trackscore}{s}
+\newcommand{\ntracks}{n}
+\newcommand{\mtotal}{M} % Total number of measurements hitherto observed
+\newcommand{\linprogsol}{\bm{\tau}}
+\newcommand{\uLagrange}{u}
+\newcommand{\cost}{c}
+\newcommand{\subgradient}{\mat{g}}
+\newcommand{\prices}{\mat{p}}
+
+% RFS commands
+
+\newcommand{\sdmarkov}{f_{\dSetization}}
+\newcommand{\sdlikeli}{f_{\mSetization}}
+\newcommand{\sdpost}[1]{f_{#1}}
+\newcommand{\sdpri}[1]{f_{#1}}
+
+\newcommand{\noexist}{\text{\o}}
+
+% EKF chapter commands
+
+\newcommand{\turnrate}{\omega}
+
+% ESKF chapter commands
+
+\newcommand{\skewsym}{\bm{S}}
+\newcommand{\quat}{\bm{q}}
+\newcommand{\quatvec}{\bm{\epsilon}}
+\newcommand{\quatscalar}{\eta}
+\newcommand{\pquat}{\bm{p}}
+\newcommand{\angvel}{\bm{\omega}}
+\newcommand{\rotmataa}[2]{\rotmat_{{#1},{#2}}} % Argument 1 is axis. Argument 2 is angle
+\newcommand{\gvec}{\mat{g}} % Gravity vector
+\newcommand{\errangle}{\bm{\theta}}
+
+% SLAM chapter commands
+
+\newcommand{\map}{\mat{m}}
+\newcommand{\odo}{\mat{u}}
+\newcommand{\compadd}{\oplus}
+\newcommand{\pnoisedisc}{\bm{\Gamma}}
+\newcommand{\odox}{u}
+\newcommand{\odoy}{v}
+\newcommand{\odoyaw}{\varphi}
+\newcommand{\idex}{\mat{J}}
+\newcommand{\postolm}{\mat{n}}
+\newcommand{\delrot}{\mathsf{J}}
+\newcommand{\nth}{h} % Neira-Tardos type hypothesis
+
+% Ernesto Macros
+
+%Gaussian
+\newcommand{\gaussianBell}[3]{1/(#3*sqrt(2*pi))*exp(-((#1-#2)^2)/(2*#3^2))}
+\newcommand{\bell}[4]{#4*exp(-((#1-#2)^2)/(2*#3^2))}
+\newcommand{\bellFactorFirstDer}[3]{
+-(#1-#2)/#3^2
+}
+\newcommand{\bellFactorSecondDer}[3]{
+((#1-#2)^2-#3^2)/#3^4
+}
+\newcommand{\normalCDF}[3]{
+(1+erf((#1-#2)/(#3*sqrt(2))))/2
+}
+
+%Sampling
+\newcommand{\transition}[3]{(-#2*(exp(-#3*#1)-1) +  #3*(exp(-#2*#1)-1))/(#2-#3)}
+
+%Poisson
+\newcommand{\poissonPDF}[2]{((#2^#1)*exp(-#2))/(factorial(#1))}
+%\pgfmathdeclarefunction{poissonCDF}{2}{
+%\pgfmathparse{#1>0 ? 0 : 1}
+%\ifnum\pgfmathresult=1\pgfmathparse{\poissonPDF{#1}{#2}+poissonCDF(#1-1,#2)}\else\pgfmathparse{0}\fi%
+%}
