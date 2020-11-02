@@ -32,3 +32,8 @@ class CatSlice(np.ndarray):
         prod_list = [self.copy() for i in range(value)]
         return np.ix_(*prod_list)
 
+eta = np.array((1,2,3,4,5,6,7,8,9,45,4,3,2))
+m = eta[3:].reshape((-1, 2)).T
+print(m)
+print(m[1][0])
+print(len(m[0]))

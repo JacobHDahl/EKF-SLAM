@@ -44,7 +44,13 @@ class EKFSLAM:
         np.ndarray, shape = (3,)
             the predicted state
         """
-        xpred = # TODO, eq (11.7). Should wrap heading angle between (-pi, pi), see utils.wrapToPi
+        xpred = np.zeros((3,))# TODO, eq (11.7). Should wrap heading angle between (-pi, pi), see utils.wrapToPi
+        head_corr = utils.wrapToPi(x[2])
+
+        xpred[0] = x[0] + u[0]*np.cos(head_corr) - u[1]*np.sin(head_corr)
+        xpred[1] = x[1] + u[0]*np.sin(head_corr) + u[1]*np.cos(head_corr)
+        x_pred[2] = utils.wrapToPi(head_corr + u[2]) #need to do this here as well? Only here?
+        #should work
 
         assert xpred.shape == (3,), "EKFSLAM.f: wrong shape for xpred"
         return xpred
@@ -64,7 +70,9 @@ class EKFSLAM:
         np.ndarray
             The Jacobian of f wrt. x.
         """
-        Fx = # TODO, eq (11.13)
+        Fx = np.array([[1,0,-u[0]*np.sin(x[2])-u[1]*np.cos(x[2])],
+                        [0,1,u[0]*np.cos(x[2])-u[1]*np.sin(x[2])],
+                        [0,0,1]]) #should work
 
         assert Fx.shape == (3, 3), "EKFSLAM.Fx: wrong shape"
         return Fx
@@ -84,7 +92,9 @@ class EKFSLAM:
         np.ndarray
             The Jacobian of f wrt. u.
         """
-        Fu = # TODO, eq (11.14)
+        Fu = np.array([[np.cos(x[2]),-np.sin(x[2]),0],
+                        [np.sin(x[2]),np.cos(x[2]),0],
+                        [0,0,1]]) #should work
 
         assert Fu.shape == (3, 3), "EKFSLAM.Fu: wrong shape"
         return Fu
@@ -119,20 +129,20 @@ class EKFSLAM:
         etapred = np.empty_like(eta)
 
         x = eta[:3]
-        etapred[:3] = # TODO robot state prediction
-        etapred[3:] = # TODO landmarks: no effect
+        etapred[:3] = self.f(x,z_odo)
+        etapred[3:] = eta[3:] #right?, yes :)
 
-        Fx = # TODO
-        Fu = # TODO
+        Fx = self.Fx(x,z_odo)
+        Fu = self.Fu(x,z_odo)
 
         # evaluate covariance prediction in place to save computation
         # only robot state changes, so only rows and colums of robot state needs changing
         # cov matrix layout:
         # [[P_xx, P_xm],
         # [P_mx, P_mm]]
-        P[:3, :3] = # TODO robot cov prediction
-        P[:3, 3:] = # TODO robot-map covariance prediction
-        P[3:, :3] = # TODO map-robot covariance: transpose of the above
+        P[:3, :3] = Fx @ P[:3,:3] @ Fx + self.Q #only submatrix affected by G@Q@(G.T)
+        P[:3, 3:] = Fx @ P[:3, 3:]              # nothing here
+        P[3:, :3] = P[3:, :3] @ Fx              # (transpose of above)
 
         assert np.allclose(P, P.T), "EKFSLAM.predict: not symmetric P"
         assert np.all(
@@ -165,17 +175,20 @@ class EKFSLAM:
 
         # None as index ads an axis with size 1 at that position.
         # Numpy broadcasts size 1 dimensions to any size when needed
-        delta_m = # TODO, relative position of landmark to sensor on robot in world frame
+        z_pred = np.zeros_like(m)
+        for i in range(len(m[0])):
+            map_cords = np.array((m[0][i],m[1][i]))
+            delta_m = map_cords - x[:2] - Rot @ self.sensor_offset
+            ran = la.norm(delta_m)   #range
+            delta_m = delta_m.reshape((2,)) #now column vector
+            trig_arg = Rot @ delta_m
+            bear = np.arctan2(trig_arg[0],trig_arg[1]) #bearing idk dude
+            z_pred[0][i] = ran
+            z_pred[1][i] = bear #:) this needs some good checking
 
-        zpredcart = # TODO, predicted measurements in cartesian coordinates, beware sensor offset for VP
+            #pls help vectorize this if possible <3
 
-        zpred_r = # TODO, ranges
-        zpred_theta = # TODO, bearings
-        zpred = # TODO, the two arrays above stacked on top of each other vertically like 
-        # [ranges; 
-        #  bearings]
-        # into shape (2, #lmrk)
-
+    
         zpred = zpred.T.ravel() # stack measurements along one dimension, [range1 bearing1 range2 bearing2 ...]
 
         assert (
