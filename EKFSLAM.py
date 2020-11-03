@@ -140,9 +140,9 @@ class EKFSLAM:
         # cov matrix layout:
         # [[P_xx, P_xm],
         # [P_mx, P_mm]]
-        P[:3, :3] = Fx @ P[:3,:3] @ Fx + self.Q #only submatrix affected by G@Q@(G.T)
+        P[:3, :3] = Fx @ P[:3,:3] @ Fx + Fu @ self.Q @ Fu.T #only submatrix affected by G@Q@(G.T) G = as in 11.8 or G = Fu?
         P[:3, 3:] = Fx @ P[:3, 3:]              # nothing here
-        P[3:, :3] = P[3:, :3] @ Fx              # (transpose of above)
+        P[3:, :3] = P[:3, 3:].T             # (transpose of above)
 
         assert np.allclose(P, P.T), "EKFSLAM.predict: not symmetric P"
         assert np.all(
@@ -175,6 +175,7 @@ class EKFSLAM:
 
         # None as index ads an axis with size 1 at that position.
         # Numpy broadcasts size 1 dimensions to any size when needed
+        '''
         z_pred = np.zeros_like(m)
         for i in range(len(m[0])):
             map_cords = np.array((m[0][i],m[1][i]))
@@ -187,6 +188,12 @@ class EKFSLAM:
             z_pred[1][i] = bear #:) this needs some good checking
 
             #pls help vectorize this if possible <3
+        '''
+        delta_m = m - (x[:2,None] + Rot.T @ self.sensor_offset[:,None])
+        zpredcart = Rot @ delta_m
+        zpred_r = np.linalg.norm(zpredcart,axis=0)
+        z_pred_theta = np.arctan2(zpredcart[1],zpredcart[0])
+        zpred = np.vstack((zpred_r,zpred_theta))
 
     
         zpred = zpred.T.ravel() # stack measurements along one dimension, [range1 bearing1 range2 bearing2 ...]
@@ -218,7 +225,7 @@ class EKFSLAM:
 
         Rot = rotmat2d(x[2])
 
-        delta_m = # TODO, relative position of landmark to robot in world frame. m - rho that appears in (11.15) and (11.16)
+        delta_m = m - (x[:2,None])# + Rot.T @ self.sensor_offset[:,None])# TODO, relative position of landmark to robot in world frame. m - rho that appears in (11.15) and (11.16)
 
         zc = # TODO, (2, #measurements), each measured position in cartesian coordinates like
         # [x coordinates;
