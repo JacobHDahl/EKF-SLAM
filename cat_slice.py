@@ -31,12 +31,3 @@ class CatSlice(np.ndarray):
         assert value > 0, f"CatSlice.__pow__: pow value must positive integer: {value}"
         prod_list = [self.copy() for i in range(value)]
         return np.ix_(*prod_list)
-
-eta = np.array((1,2,3,4,5,6,7,8,9,45,4,3,2))
-m = eta[3:].reshape((-1, 2)).T
-x = np.array([[1],[2],[3]])
-vec = np.array([[1],[2]])
-
-delta_m = m - (x[:2,None])
-#print(m)
-print(delta_m)

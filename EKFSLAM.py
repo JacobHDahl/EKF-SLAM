@@ -6,6 +6,8 @@ from utils import rotmat2d
 from JCBB import JCBB
 import utils
 
+from cat_slice import CatSlice
+
 # import line_profiler
 # import atexit
 
@@ -216,7 +218,6 @@ class EKFSLAM:
         np.ndarray, shape=(2 * #landmarks, 3 + 2 * #landmarks)
             the jacobian of h wrt. eta.
         """
-        # extract states and map
         x = eta[0:3]
         ## reshape map (2, #landmarks), m[j] is the jth landmark
         m = eta[3:].reshape((-1, 2)).T
@@ -225,16 +226,16 @@ class EKFSLAM:
 
         Rot = rotmat2d(x[2])
 
-        delta_m = m - (x[:2,None])# + Rot.T @ self.sensor_offset[:,None])# TODO, relative position of landmark to robot in world frame. m - rho that appears in (11.15) and (11.16)
+        delta_m = np.array([m[:,i] - x[:2] for i in range(numM)]).T # TODO, relative position of landmark to robot in world frame. m - rho that appears in (11.15) and (11.16)
 
-        zc = # TODO, (2, #measurements), each measured position in cartesian coordinates like
+        zc = np.array([delta_m[:,i] - Rot @ self.sensor_offset for i in range(numM)]).T # TODO, (2, #measurements), each measured position in cartesian coordinates like
         # [x coordinates;
         #  y coordinates]
 
-        zpred = # TODO (2, #measurements), predicted measurements, like
+        zpred = self.h(eta) # TODO (2, #measurements), predicted measurements, like
         # [ranges;
         #  bearings]
-        zr = # TODO, ranges
+        zr = zpred[1,:]# TODO, ranges
 
         Rpihalf = rotmat2d(np.pi / 2)
 
@@ -248,6 +249,8 @@ class EKFSLAM:
         Hx = H[:, :3]  # slice view, setting elements of Hx will set H as well
         Hm = H[:, 3:]  # slice view, setting elements of Hm will set H as well
 
+
+
         # proposed way is to go through landmarks one by one
         jac_z_cb = -np.eye(2, 3)  # preallocate and update this for some speed gain if looping
         for i in range(numM):  # But this whole loop can be vectorized
@@ -255,8 +258,17 @@ class EKFSLAM:
             inds = slice(ind, ind + 2)  # the inds slice for the ith landmark into H
 
             # TODO: Set H or Hx and Hm here
+            d_m = delta_m[:,i]
+            Hx[inds] = -np.array([[1/la.norm(d_m) @ d_m.T, 0],
+                            [1/la.norm(d_m)**2 @ d_m.T @ Rpihalf, 1]])
+            
+            Hm[inds] = (1/la.norm(d_m)**2) * np.array([[la.norm(d_m) @ d_m.T],
+                                                    [d_m.T@Rpihalf]])
 
         # TODO: You can set some assertions here to make sure that some of the structure in H is correct
+        assert H (
+            H.shape[0] == 2 * numM and H.shape[1] == 3 + 2 * numM
+        ), "SLAM.H: Wrong shape on H"
         return H
 
     def add_landmarks(
@@ -297,21 +309,23 @@ class EKFSLAM:
             inds = slice(ind, ind + 2)
             zj = z[inds]
 
-            rot = # TODO, rotmat in Gz
-            lmnew[inds] = # TODO, calculate position of new landmark in world frame
+            rot = rotmat2d(zj[1] + eta[2])# TODO, rotmat in Gz
 
-            Gx[inds, :2] = # TODO
-            Gx[inds, 2] = # TODO
+            # lmnew(inds) = Rbody * (p2c(zj) + obj.sensOffset) + eta(1:2); % mean
+            lmnew[inds] = sensor_offset_world @ zj[0] + eta[:2] # TODO, calculate position of new landmark in world frame
 
-            Gz = # TODO
+            Gx[inds, :2] = I2# TODO
+            Gx[inds, 2] = np.array([zj[0] @ np.array([-np.sin(zj[1] + eta[2]), np.cos(zj[1] + eta[2])]).T + sensor_offset_world_der @ self.sensor_offset])# TODO
 
-            Rall[inds, inds] = # TODO, Gz * R * Gz^T, transform measurement covariance from polar to cartesian coordinates
+            Gz = rot@np.diag([1, zj[0]])# TODO
+
+            Rall[inds, inds] = Gz @ self.R @ Gz.T # TODO, Gz * R * Gz^T, transform measurement covariance from polar to cartesian coordinates
 
         assert len(lmnew) % 2 == 0, "SLAM.add_landmark: lmnew not even length"
-        etaadded = # TODO, append new landmarks to state vector
-        Padded = # TODO, block diagonal of P_new, see problem text in 1g) in graded assignment 3
-        Padded[n:, :n] = # TODO, top right corner of P_new
-        Padded[:n, n:] = # TODO, transpose of above. Should yield the same as calcualion, but this enforces symmetry and should be cheaper
+        etaadded = np.vstack(eta, lmnew)# TODO, append new landmarks to state vector
+        Padded = np.diag([P, Gx@P[:3,:3]@Gx.T + Rall]) # TODO, block diagonal of P_new, see problem text in 1g) in graded assignment 3
+        Padded[n:, :n] = Gx@P[:3, :] # TODO, top right corner of P_new
+        Padded[:n, n:] = Padded[n:, :n].T # TODO, transpose of above. Should yield the same as calcualion, but this enforces symmetry and should be cheaper
 
         assert (
             etaadded.shape * 2 == Padded.shape
