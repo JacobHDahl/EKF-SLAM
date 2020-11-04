@@ -96,14 +96,12 @@ K = len(z)
 M = len(landmarks)
 
 # %% Initilize
-Q = # TODO
-R = # TODO
+Q = np.array([[1,0,0],[0,1,0],[0,0,1]])
+R = np.array([[1,0],[0,1]])
 
 doAsso = True
 
-JCBBalphas = np.array(
-    # TODO,
-)  # first is for joint compatibility, second is individual
+JCBBalphas = np.array([0.001, 0.0001]) #idk if this is good  # first is for joint compatibility, second is individual
 # these can have a large effect on runtime either through the number of landmarks created
 # or by the size of the association search space.
 
@@ -143,10 +141,10 @@ print("starting sim (" + str(N) + " iterations)")
 
 for k, z_k in tqdm(enumerate(z[:N])):
 
-    eta_hat[k], P_hat[k], NIS[k], a[k] = # TODO update
+    eta_hat[k], P_hat[k], NIS[k], a[k] = slam.update(eta_pred[k],P_pred[k],z[k])
 
     if k < K - 1:
-        eta_pred[k + 1], P_pred[k + 1] = # TODO predict
+        eta_pred[k + 1], P_pred[k + 1] = slam.predict(eta_hat[k],P_hat[k],odometry[k])
 
     assert (
         eta_hat[k].shape[0] == P_hat[k].shape[0]
@@ -163,7 +161,7 @@ for k, z_k in tqdm(enumerate(z[:N])):
         NISnorm[k] = 1
         CInorm[k].fill(1)
 
-    NEESes[k] = # TODO, use provided function slam.NEESes
+    NEESes[k] = slam.NEESes(eta_hat[k],P_hat[k],poseGT[k])# TODO, use provided function slam.NEESes
 
     if doAssoPlot and k > 0:
         axAsso.clear()

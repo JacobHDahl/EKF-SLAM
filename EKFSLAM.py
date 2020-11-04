@@ -195,7 +195,7 @@ class EKFSLAM:
         zpredcart = Rot @ delta_m
         zpred_r = np.linalg.norm(zpredcart,axis=0)
         z_pred_theta = np.arctan2(zpredcart[1],zpredcart[0])
-        zpred = np.vstack((zpred_r,zpred_theta))
+        zpred = np.vstack((zpred_r,z_pred_theta))
 
     
         zpred = zpred.T.ravel() # stack measurements along one dimension, [range1 bearing1 range2 bearing2 ...]
@@ -422,6 +422,7 @@ class EKFSLAM:
 
             # Here you can use simply np.kron (a bit slow) to form the big (very big in VP after a while) R,
             # or be smart with indexing and broadcasting (3d indexing into 2d mat) realizing you are adding the same R on all diagonals
+            
             S = H @ P @ H.T + np.kron(np.eye(numLmk),self.R) #kron :)
             assert (
                 S.shape == zpred.shape * 2
@@ -433,7 +434,7 @@ class EKFSLAM:
 
             # No association could be made, so skip update
             if za.shape[0] == 0:
-                etaupd, Pupd = self.predict(eta,P,z_odo)
+                etaupd, Pupd = self.predict(eta,P,z)
                 NIS = 1 # TODO: beware this one when analysing consistency.
 
             else:
@@ -443,17 +444,17 @@ class EKFSLAM:
 
                 # Kalman mean update
                 # S_cho_factors = la.cho_factor(Sa) # Optional, used in places for S^-1, see scipy.linalg.cho_factor and scipy.linalg.cho_solve
-                W = P @ H.T @ la.cho_factor(S) # TODO, Kalman gain, can use S_cho_factors
+                W = P @ H.T @ la.cho_factor(Sa) # TODO, Kalman gain, can use S_cho_factors
                 etapred, Ppred = self.predict(eta,P,z)
                 etaupd = etapred + W @ v
 
                 # Kalman cov update: use Joseph form for stability
                 jo = -W @ Ha
                 jo[np.diag_indices(jo.shape[0])] += 1  # same as adding Identity mat
-                Pupd = jo @ Ppred @ jo.T + W @ R @ W.T# TODO, Kalman update. This is the main workload on VP after speedups
+                Pupd = jo @ Ppred @ jo.T + W @ np.kron(np.eye(numLmk),self.R) @ W.T# TODO, Kalman update. This is the main workload on VP after speedups
 
                 # calculate NIS, can use S_cho_factors
-                NIS = v.T @ la.cho_factor(S) @ v
+                NIS = v.T @ la.cho_factor(Sa) @ v
 
                 # When tested, remove for speed
                 assert np.allclose(Pupd, Pupd.T), "EKFSLAM.update: Pupd not symmetric"
