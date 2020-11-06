@@ -49,7 +49,7 @@ class EKFSLAM:
             the predicted state
         """
         xpred = np.zeros((3,))# TODO, eq (11.7). Should wrap heading angle between (-pi, pi), see utils.wrapToPi
-        head_corr = utils.wrapToPi(x[2])
+        head_corr = x[2] #wraptopi?
 
         xpred[0] = x[0] + u[0]*np.cos(head_corr) - u[1]*np.sin(head_corr)
         xpred[1] = x[1] + u[0]*np.sin(head_corr) + u[1]*np.cos(head_corr)
@@ -230,16 +230,11 @@ class EKFSLAM:
 
         Rot = rotmat2d(-x[2])
 
-        delta_m = m - x[:2].reshape(2,1) - (rotmat2d(x[2]) @ self.sensor_offset).reshape(2,1) # TODO, relative position of landmark to robot in world frame. m - rho that appears in (11.15) and (11.16)
+        delta_m = m - x[:2, None] 
+        zc = delta_m - Rot @ self.sensor_offset[:, None]
 
-        zc = Rot @ delta_m# TODO, (2, #measurements), each measured position in cartesian coordinates like
-        # [x coordinates;
-        #  y coordinates]
-
-        zpred = self.h(eta)# TODO (2, #measurements), predicted measurements, like
-        # [ranges;
-        #  bearings]
-        zr = zpred[::2]# TODO, ranges
+        zpred = self.h(eta).reshape(-1,2).T
+        zr = zpred[0]
 
         Rpihalf = rotmat2d(np.pi / 2)
 
@@ -258,10 +253,12 @@ class EKFSLAM:
         for i in range(numM):  # But this hole loop can be vectorized
             ind = 2 * i # starting postion of the ith landmark into H
             inds = slice(ind, ind + 2)  # the inds slice for the ith landmark into H
-            Hx[inds,:] = -1 * np.array([[*(delta_m[:,i].T / zr[i]), 0], [*(delta_m[:,i].T / (zr[i] ** 2)), 1]])
-            Hm[inds,inds] = (1 / zr[i] ** 2) * np.array([[*(zr[i] * delta_m[:,i].T)], [*delta_m[:,i].T @ Rpihalf]])
-            # TODO: Set H or Hx and Hm here
+            jac_z_cb[:,2] = -Rpihalf @ delta_m[:,i]
 
+            Hx[ind] = (zc[:,i]/zr[i]) @ jac_z_cb
+            Hx[ind + 1] = (zc[:,i]/zr[i]**2) @ Rpihalf.T @ jac_z_cb
+
+            Hm[inds,inds] = -Hx[inds, :2]
         
         assert (H.shape == (2 * numM, 3 + 2 * numM)
         ), "EKFSLAM.H: Wrong shape on calculated H"# TODO: You can set some assertions here to make sure that some of the structure in H is correct
@@ -286,7 +283,6 @@ class EKFSLAM:
         Tuple[np.ndarray, np.ndarray], shapes=(3 + 2*(#landmarks + #newlandmarks,), (3 + 2*(#landmarks + #newlandmarks,)*2
             eta with new landmarks appended, and its covariance
         """
-        start = time.time()
         n = P.shape[0]
         assert z.ndim == 1, "SLAM.add_landmarks: z must be a 1d array"
 
@@ -307,20 +303,20 @@ class EKFSLAM:
             zj = z[inds]
 
             rot = rotmat2d(zj[1] + eta[2])# TODO, rotmat in Gz
-            lmnew[inds] = eta[:2] + sensor_offset_world * zj[0]# TODO, calculate position of new landmark in world frame
+            lmnew[inds] = zj[0] * rot[:,0] + eta[0:2] + sensor_offset_world
 
-            Gx[inds, :2] = I2 # TODO
+            Gx[inds, :2] = I2 
             Gx[inds, 2] = zj[0] * rot[:, 1] + sensor_offset_world_der# TODO
 
-            Gz = rot @ np.diag([1, zj[0]])# TODO
+            Gz = rot @ np.diag([1, zj[0]]) #TODO
 
             Rall[inds, inds] = Gz @ self.R @ Gz.T # TODO, Gz * R * Gz^T, transform measurement covariance from polar to cartesian coordinates
 
         assert len(lmnew) % 2 == 0, "SLAM.add_landmark: lmnew not even length"
-        etaadded = np.concatenate([eta[:], lmnew]) # TODO, append new landmarks to state vector
-        Padded = la.block_diag(P, Gx @ P[:3,:3] @ Gx.T + Rall.T) # TODO, block diagonal of P_new, see problem text in 1g) in graded assignment 3
-        Padded[:n, n:] = P[:, :3] @ Gx.T # TODO, top right corner of P_new
-        Padded[n:, :n] = Padded[:n, n:].T # TODO, transpose of above. Should yield the same as calcualion, but this enforces symmetry and should be cheaper
+        etaadded = np.append(eta, lmnew) # TODO, append new landmarks to state vector
+        Padded = la.block_diag(P, Gx @ P[:3,:3] @ Gx.T + Rall) # TODO, block diagonal of P_new, see problem text in 1g) in graded assignment 3
+        Padded[n:, :n] = Gx @ P[:3, :] # TODO, top right corner of P_new
+        Padded[:n, n:] = Padded[n:, :n].T # TODO, transpose of above. Should yield the same as calcualion, but this enforces symmetry and should be cheaper
 
         assert (
             etaadded.shape * 2 == Padded.shape
@@ -332,8 +328,6 @@ class EKFSLAM:
             np.linalg.eigvals(Padded) >= 0
         ), "EKFSLAM.add_landmarks: Padded not PSD"
 
-        end = time.time()
-        print("Time spent in add_landmark:",end-start)
         return etaadded, Padded
 
     def associate(
@@ -409,7 +403,6 @@ class EKFSLAM:
         Tuple[np.ndarray, np.ndarray, float, np.ndarray]
             [description]
         """
-        start = time.time()
         numLmk = (eta.size - 3) // 2
         assert (len(eta) - 3) % 2 == 0, "EKFSLAM.update: landmark lenght not even"
 
@@ -430,9 +423,8 @@ class EKFSLAM:
 
             # Perform data association
             za, zpred, Ha, Sa, a = self.associate(z, zpred, H, S)
-            end = time.time()
-            print("time spent in update:",end-start)
             # No association could be made, so skip update
+
             if za.shape[0] == 0:
                 etaupd = eta
                 Pupd = P
