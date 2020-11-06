@@ -96,8 +96,8 @@ K = len(z)
 M = len(landmarks)
 
 # %% Initilize
-Q = np.array([[1,0,0],[0,1,0],[0,0,1]])
-R = np.array([[1,0],[0,1]])
+Q = np.array([[1,0,0],[0,1,0],[0,0,1]])*1e-3
+R = np.array([[1,0],[0,1]])*1e-3
 
 doAsso = True
 
@@ -130,7 +130,7 @@ P_pred[0] = np.zeros((3, 3))  # we also say that we are 100% sure about that
 # plotting
 
 doAssoPlot = False
-playMovie = True
+playMovie = False
 if doAssoPlot:
     figAsso, axAsso = plt.subplots(num=1, clear=True)
 
@@ -141,7 +141,10 @@ print("starting sim (" + str(N) + " iterations)")
 
 for k, z_k in tqdm(enumerate(z[:N])):
 
-    eta_hat[k], P_hat[k], NIS[k], a[k] = slam.update(eta_pred[k],P_pred[k],z[k])
+    eta_hat[k], P_hat[k], NIS[k], a[k] = slam.update(eta_pred[k],P_pred[k],z_k)
+
+    if k%10 == 0:
+        print(eta_hat[k].shape)
 
     if k < K - 1:
         eta_pred[k + 1], P_pred[k + 1] = slam.predict(eta_hat[k],P_hat[k],odometry[k])
@@ -161,7 +164,7 @@ for k, z_k in tqdm(enumerate(z[:N])):
         NISnorm[k] = 1
         CInorm[k].fill(1)
 
-    NEESes[k] = slam.NEESes(eta_hat[k],P_hat[k],poseGT[k])# TODO, use provided function slam.NEESes
+    #NEESes[k] = slam.NEESes(eta_hat[k],P_hat[k],poseGT[k])# TODO, use provided function slam.NEESes
 
     if doAssoPlot and k > 0:
         axAsso.clear()

@@ -1,5 +1,7 @@
 import numpy as np
 from typing import Union, Sequence, Any
+from scipy.linalg import block_diag
+import scipy.linalg as la
 
 
 class CatSlice(np.ndarray):
@@ -31,3 +33,4 @@ class CatSlice(np.ndarray):
         assert value > 0, f"CatSlice.__pow__: pow value must positive integer: {value}"
         prod_list = [self.copy() for i in range(value)]
         return np.ix_(*prod_list)
+
