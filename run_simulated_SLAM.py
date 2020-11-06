@@ -96,7 +96,9 @@ K = len(z)
 M = len(landmarks)
 
 # %% Initilize
-Q = np.array([[1,0,0],[0,1,0],[0,0,1]])*1e-3
+Q = np.array([[1,0,0],[0,1,0],[0,0,0.1]])*1e-3
+#better results when heading covariance is lower, but 0.01*1e-3 diverged
+#0.1*1e-3 was nice
 R = np.array([[1,0],[0,1]])*1e-3
 
 doAsso = True
@@ -143,9 +145,6 @@ for k, z_k in tqdm(enumerate(z[:N])):
 
     eta_hat[k], P_hat[k], NIS[k], a[k] = slam.update(eta_pred[k],P_pred[k],z_k)
 
-    if k%10 == 0:
-        print(eta_hat[k].shape)
-
     if k < K - 1:
         eta_pred[k + 1], P_pred[k + 1] = slam.predict(eta_hat[k],P_hat[k],odometry[k])
 
@@ -155,7 +154,7 @@ for k, z_k in tqdm(enumerate(z[:N])):
 
     num_asso = np.count_nonzero(a[k] > -1)
 
-    CI[k] = chi2.interval(alpha, 2 * num_asso)
+    CI[k] = chi2.interval(1-alpha, 2 * num_asso)
 
     if num_asso > 0:
         NISnorm[k] = NIS[k] / (2 * num_asso)
@@ -164,7 +163,7 @@ for k, z_k in tqdm(enumerate(z[:N])):
         NISnorm[k] = 1
         CInorm[k].fill(1)
 
-    #NEESes[k] = slam.NEESes(eta_hat[k],P_hat[k],poseGT[k])# TODO, use provided function slam.NEESes
+    NEESes[k] = slam.NEESes(eta_hat[k][:3],P_hat[k][:3,:3],poseGT[k])# TODO, use provided function slam.NEESes
 
     if doAssoPlot and k > 0:
         axAsso.clear()
@@ -237,14 +236,14 @@ tags = ['all', 'pos', 'heading']
 dfs = [3, 2, 1]
 
 for ax, tag, NEES, df in zip(ax4, tags, NEESes.T, dfs):
-    CI_NEES = chi2.interval(alpha, df)
+    CI_NEES = chi2.interval(1-alpha, df)
     ax.plot(np.full(N, CI_NEES[0]), '--')
     ax.plot(np.full(N, CI_NEES[1]), '--')
     ax.plot(NEES[:N], lw=0.5)
     insideCI = (CI_NEES[0] <= NEES) * (NEES <= CI_NEES[1])
     ax.set_title(f'NEES {tag}: {insideCI.mean()*100}% inside CI')
 
-    CI_ANEES = np.array(chi2.interval(alpha, df*N)) / N
+    CI_ANEES = np.array(chi2.interval(1-alpha, df*N)) / N
     print(f"CI ANEES {tag}: {CI_ANEES}")
     print(f"ANEES {tag}: {NEES.mean()}")
 
