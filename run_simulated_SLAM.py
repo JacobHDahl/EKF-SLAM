@@ -96,14 +96,16 @@ K = len(z)
 M = len(landmarks)
 
 # %% Initilize
-Q = np.array([[1,0,0],[0,1,0],[0,0,0.1]])*1e-3
-#better results when heading covariance is lower, but 0.01*1e-3 diverged
-#0.1*1e-3 was nice
-R = np.array([[1,0],[0,1]])*1e-3
+Q = np.array([[(6e-2)**2,0,0],
+            [0,(6e-2)**2,0],
+            [0,0,(1.9e-2)**2]])# TODO
+            
+R = np.array([[(4.7e-2)**2, 0],
+            [0, (1.9e-2)**2]])# TODO
 
 doAsso = True
 
-JCBBalphas = np.array([0.001, 0.0001]) #idk if this is good  # first is for joint compatibility, second is individual
+JCBBalphas = np.array([1e-10, 1e-10]) #idk if this is good  # first is for joint compatibility, second is individual
 # these can have a large effect on runtime either through the number of landmarks created
 # or by the size of the association search space.
 

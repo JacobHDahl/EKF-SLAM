@@ -109,6 +109,7 @@ car = Car(L, H, a, b)
 sigmas = np.array([(4e-2)**2,(4e-2)**2,(2e-2)**2])*2e-1 #TODO
 CorrCoeff = np.array([[1, 0, 0], [0, 1, 0.9], [0, 0.9, 1]])
 Q = np.diag(sigmas) @ CorrCoeff @ np.diag(sigmas)
+print(Q)
 
 R = np.array([[(4e-2)**2,0],[0,(2e-2)**2]])*1.5e0
 #*1e-1 10 times slower run-time, worse NIS
