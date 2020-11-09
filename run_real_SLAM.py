@@ -92,10 +92,10 @@ LASER = (
 )  # Divide by 100 to be compatible with Python implementation of detectTrees
 La_m = realSLAM_ws["La_m"].ravel()
 Lo_m = realSLAM_ws["Lo_m"].ravel()
-
 K = timeOdo.size
 mK = timeLsr.size
 Kgps = timeGps.size
+
 
 # %% Parameters
 
@@ -106,15 +106,15 @@ b = 0.5  # laser distance to the left of center
 
 car = Car(L, H, a, b)
 
-sigmas = np.array([(4e-2)**2,(4e-2)**2,(2e-2)**2])*2e-1 #TODO
+sigmas = np.array([(7e-2)**2,(7e-2)**2,(2e-2)**2])*1e-1 #TODO
+
 CorrCoeff = np.array([[1, 0, 0], [0, 1, 0.9], [0, 0.9, 1]])
 Q = np.diag(sigmas) @ CorrCoeff @ np.diag(sigmas)
-print(Q)
 
-R = np.array([[(4e-2)**2,0],[0,(2e-2)**2]])*1.5e0
+R = np.array([[(4e-2)**2,0],[0,(2e-2)**2]])*2e0
 #*1e-1 10 times slower run-time, worse NIS
 
-JCBBalphas = np.array([1e-2,1e-3]) #TODO
+JCBBalphas = np.array([1e-4,1e-6]) #TODO
 sensorOffset = np.array([car.a + car.L, car.b])
 doAsso = True
 
@@ -140,7 +140,8 @@ mk = mk_first
 t = timeOdo[0]
 
 # %%  run
-N = K//10
+N = K
+#spør studass om de to predictene som ble nevnt på forum. If you predict twice youre doing it wrong
 
 doPlot = False
 
@@ -256,6 +257,13 @@ if do_raw_prediction:
 fig6, ax6 = plt.subplots(num=6, clear=True)
 ax6.scatter(*eta[3:].reshape(-1, 2).T, color="r", marker="x")
 ax6.plot(*xupd[mk_first:mk, :2].T)
+ax6.scatter(
+        Lo_m[timeGps < timeOdo[N - 1]],
+        La_m[timeGps < timeOdo[N - 1]],
+        c="g",
+        marker=".",
+        label="GPS",
+    )
 ax6.set(
     title=f"Steps {k}, laser scans {mk-1}, landmarks {len(eta[3:])//2},\nmeasurements {z.shape[0]}, num new = {np.sum(a[mk] == -1)}"
 )
