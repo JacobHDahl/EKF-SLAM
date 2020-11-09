@@ -96,12 +96,12 @@ K = len(z)
 M = len(landmarks)
 
 # %% Initilize
-Q = np.array([[(6e-2)**2,0,0],
-            [0,(6e-2)**2,0],
-            [0,0,(1.9e-2)**2]])# TODO
-            
-R = np.array([[(4.7e-2)**2, 0],
-            [0, (1.9e-2)**2]])# TODO
+Q = np.array([[(7e-2)**2,0,0],
+            [0,(7e-2)**2,0],
+            [0,0,(2e-2)**2]])*1e-1# TODO
+
+R = np.array([[(4e-2)**2, 0],
+            [0, (2e-2)**2]])*2e0# TODO
 
 doAsso = True
 
