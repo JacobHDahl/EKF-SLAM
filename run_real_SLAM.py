@@ -114,7 +114,7 @@ Q = np.diag(sigmas) @ CorrCoeff @ np.diag(sigmas)
 R = np.array([[(4e-2)**2,0],[0,(2e-2)**2]])*2e0
 #*1e-1 10 times slower run-time, worse NIS
 
-JCBBalphas = np.array([1e-4,1e-6]) #TODO
+JCBBalphas = np.array([1e-2,1e-3]) #TODO
 sensorOffset = np.array([car.a + car.L, car.b])
 doAsso = True
 
