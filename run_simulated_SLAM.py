@@ -231,13 +231,7 @@ ax2.grid()
 
 # %% Consistency
 
-valid_NIS = ~np.isnan(NIS)
-NIS = NIS[valid_NIS]
-# Interval and ANIS
-CI_ANIS = np.array(chi2.interval(1 - alpha, total_num_asso * 2)) / NIS.size
-ANIS = NIS.mean()
-print("CI_ANIS:",CI_ANIS)
-print("ANIS:",ANIS,"\n")
+
 
 # NIS
 insideCI = (CI[:N,0] <= NIS[:N]) * (NIS[:N] <= CI[:N,1])
@@ -250,6 +244,8 @@ ax3.plot(NIS[:N], lw=0.5)
 ax3.set_title(f'NIS, {round(insideCI.mean()*100,4)}% inside CI')
 
 #fig3.savefig("NIS_sim",dpi=1200)
+
+
 
 # NEES
 
@@ -335,6 +331,14 @@ if playMovie:
         print(
             "Install celluloid module, \n\n$ pip install celluloid\n\nto get fancy animation of EKFSLAM."
         )
+
+valid_NIS = ~np.isnan(NISes)
+NISes = NISes[valid_NIS]
+# Interval and ANIS
+CI_ANIS = np.array(chi2.interval(1 - alpha, total_num_asso * 2)) / NISes.size
+ANIS = NISes.mean()
+print("CI_ANIS:",CI_ANIS)
+print("ANIS:",ANIS,"\n")
 
 plt.show()
 # %%
