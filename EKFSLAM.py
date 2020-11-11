@@ -179,20 +179,6 @@ class EKFSLAM:
 
         # None as index ads an axis with size 1 at that position.
         # Numpy broadcasts size 1 dimensions to any size when needed
-        '''
-        z_pred = np.zeros_like(m)
-        for i in range(len(m[0])):
-            map_cords = np.array((m[0][i],m[1][i]))
-            delta_m = map_cords - x[:2] - Rot @ self.sensor_offset
-            ran = la.norm(delta_m)   #range
-            delta_m = delta_m.reshape((2,)) #now column vector
-            trig_arg = Rot @ delta_m
-            bear = np.arctan2(trig_arg[0],trig_arg[1]) #bearing idk dude
-            z_pred[0][i] = ran
-            z_pred[1][i] = bear #:) this needs some good checking
-
-            #pls help vectorize this if possible <3
-        '''
         delta_m = m - (x[:2,None] + Rot.T @ self.sensor_offset[:,None])
         zpredcart = Rot @ delta_m
         zpred_r = np.linalg.norm(zpredcart,axis=0)
@@ -359,7 +345,6 @@ class EKFSLAM:
         if self.do_asso:
             # Associate
             a = JCBB(z, zpred, S, self.alphas[0], self.alphas[1])
-
             # Extract associated measurements
             zinds = np.empty_like(z, dtype=bool)
             zinds[::2] = a > -1  # -1 means no association
@@ -408,18 +393,22 @@ class EKFSLAM:
 
         if numLmk > 0:
             # Prediction and innovation covariance
+            
             zpred = self.h(eta)
             H = self.H(eta)
+            
 
+            
             # Here you can use simply np.kron (a bit slow) to form the big (very big in VP after a while) R,
             # or be smart with indexing and broadcasting (3d indexing into 2d mat) realizing you are adding the same R on all diagonals
-            R_repeated =  np.diag(np.diagonal(ml.repmat(self.R, numLmk, numLmk)))
+            R_big =  np.diag(np.diagonal(ml.repmat(self.R, numLmk, numLmk)))
 
-            S = H @ P @ H.T + R_repeated 
+            S = H @ P @ H.T + R_big
             assert (
                 S.shape == zpred.shape * 2
             ), "EKFSLAM.update: wrong shape on either S or zpred"
             z = z.ravel()  # 2D -> flat
+
 
             # Perform data association
             za, zpred, Ha, Sa, a = self.associate(z, zpred, H, S)
@@ -449,6 +438,7 @@ class EKFSLAM:
                 # calculate NIS, can use S_cho_factors
                 NIS = v.T @ la.cho_solve(S_cho_factors, v)
 
+
                 # When tested, remove for speed
                 assert np.allclose(Pupd, Pupd.T), "EKFSLAM.update: Pupd not symmetric"
                 assert np.all(
@@ -471,6 +461,8 @@ class EKFSLAM:
                 z_new_inds[1::2] = is_new_lmk
                 z_new = z[z_new_inds]
                 etaupd, Pupd = self.add_landmarks(etaupd,Pupd,z_new) # TODO, add new landmarks.
+
+                
 
         assert np.allclose(Pupd, Pupd.T), "EKFSLAM.update: Pupd must be symmetric"
         assert np.all(np.linalg.eigvals(Pupd) >= 0), "EKFSLAM.update: Pupd must be PSD"

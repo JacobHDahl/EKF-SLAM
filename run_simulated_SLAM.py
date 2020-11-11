@@ -105,7 +105,7 @@ R = np.array([[(4e-2)**2, 0],
 
 doAsso = True
 
-JCBBalphas = np.array([1e-10, 1e-10]) #idk if this is good  # first is for joint compatibility, second is individual
+JCBBalphas = np.array([1e-4, 1e-4]) #idk if this is good  # first is for joint compatibility, second is individual
 # these can have a large effect on runtime either through the number of landmarks created
 # or by the size of the association search space.
 
@@ -140,6 +140,7 @@ if doAssoPlot:
 
 # %% Run simulation
 N = K
+#should run whole set
 
 print("starting sim (" + str(N) + " iterations)")
 
