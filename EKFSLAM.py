@@ -417,7 +417,7 @@ class EKFSLAM:
             if za.shape[0] == 0:
                 etaupd = eta
                 Pupd = P
-                NIS = 1 # TODO: beware this one when analysing consistency.
+                NIS = 0 # TODO: beware this one when analysing consistency.
 
             else:
                 # Create the associated innovation

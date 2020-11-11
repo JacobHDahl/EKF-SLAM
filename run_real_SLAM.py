@@ -133,15 +133,15 @@ CI = np.zeros((mK, 2))
 CInorm = np.zeros((mK, 2))
 
 # Initialize state
-eta = np.array([Lo_m[0], La_m[1], 30 * np.pi / 180]) # you might want to tweak these for a good reference
+eta = np.array([Lo_m[0], La_m[1], 36 * np.pi / 180]) # you might want to tweak these for a good reference
 P = np.zeros((3, 3))
 
-mk_first = 1  # first seems to be a bit off in timing
+mk_first = 1 
 mk = mk_first
 t = timeOdo[0]
 
 # %%  run
-N = K//10
+N = K//8
 #spør studass om de to predictene som ble nevnt på forum. If you predict twice youre doing it wrong
 #spør hvordan redusere landmarks. Går for tregt. Tune alpha only?
 
@@ -165,7 +165,7 @@ if do_raw_prediction:  # TODO: further processing such as plotting
 
     for k in range(min(N, K - 1)):
         odos[k + 1] = odometry(speed[k + 1], steering[k + 1], 0.025, car)
-        odox[k + 1], _ = slam.predict(odox[k], P, odos[k + 1])
+        odox[k + 1], _ = slam.predict(odox[k], P.copy(), odos[k + 1])
 
 for k in tqdm(range(N)):
     if mk < mK - 1 and timeLsr[mk] <= timeOdo[k + 1]:
@@ -180,11 +180,11 @@ for k in tqdm(range(N)):
 
         t = timeLsr[mk]  # ? reset time to this laser time for next post predict
         odo = odometry(speed[k + 1], steering[k + 1], dt, car)
-        eta, P = slam.predict(eta,P,odo) #TODO
+        eta, P = slam.predict(eta,P.copy(),odo) #TODO
         
         z = detectTrees(LASER[mk])
         start2 = time.time()
-        eta, P, NIS[mk], a[mk] = slam.update(eta,P,z) #TODO
+        eta, P, NIS[mk], a[mk] = slam.update(eta,P.copy(),z) #TODO
         end2 = time.time()
 
         #if k%50==0:
@@ -231,7 +231,7 @@ for k in tqdm(range(N)):
         dt = timeOdo[k + 1] - t
         t = timeOdo[k + 1]
         odo = odometry(speed[k + 1], steering[k + 1], dt, car)
-        eta, P = slam.predict(eta, P, odo)
+        eta, P = slam.predict(eta, P.copy(), odo)
 
 
 

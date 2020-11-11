@@ -142,6 +142,10 @@ if doAssoPlot:
 N = K
 #should run whole set
 
+# Initialize all NIS as invalid, i.e. nan
+total_num_asso = 0
+NISes = np.full(N, np.nan)
+
 print("starting sim (" + str(N) + " iterations)")
 
 for k, z_k in tqdm(enumerate(z[:N])):
@@ -162,6 +166,9 @@ for k, z_k in tqdm(enumerate(z[:N])):
     if num_asso > 0:
         NISnorm[k] = NIS[k] / (2 * num_asso)
         CInorm[k] = CI[k] / (2 * num_asso)
+
+        total_num_asso += num_asso
+        NISes[k] = NIS[k]
     else:
         NISnorm[k] = 1
         CInorm[k].fill(1)
@@ -216,21 +223,33 @@ for l, lmk_l in enumerate(lmk_est_final):
 ax2.plot(*poseGT.T[:2], c="r", label="gt")
 ax2.plot(*pose_est.T[:2], c="g", label="est")
 ax2.plot(*ellipse(pose_est[-1, :2], P_hat[N - 1][:2, :2], 5, 200).T, c="g")
-ax2.set(title="results", xlim=(mins[0], maxs[0]), ylim=(mins[1], maxs[1]))
+ax2.set(title="", xlim=(mins[0], maxs[0]), ylim=(mins[1], maxs[1]))
 ax2.axis("equal")
 ax2.grid()
 
+#fig2.savefig("map_sim",dpi=1200)
+
 # %% Consistency
 
+valid_NIS = ~np.isnan(NIS)
+NIS = NIS[valid_NIS]
+# Interval and ANIS
+CI_ANIS = np.array(chi2.interval(1 - alpha, total_num_asso * 2)) / NIS.size
+ANIS = NIS.mean()
+print("CI_ANIS:",CI_ANIS)
+print("ANIS:",ANIS,"\n")
+
 # NIS
-insideCI = (CInorm[:N,0] <= NISnorm[:N]) * (NISnorm[:N] <= CInorm[:N,1])
+insideCI = (CI[:N,0] <= NIS[:N]) * (NIS[:N] <= CI[:N,1])
 
 fig3, ax3 = plt.subplots(num=3, clear=True)
-ax3.plot(CInorm[:N,0], '--')
-ax3.plot(CInorm[:N,1], '--')
-ax3.plot(NISnorm[:N], lw=0.5)
+ax3.plot(CI[:N,0], '--')
+ax3.plot(CI[:N,1], '--')
+ax3.plot(NIS[:N], lw=0.5)
 
-ax3.set_title(f'NIS, {insideCI.mean()*100}% inside CI')
+ax3.set_title(f'NIS, {round(insideCI.mean()*100,4)}% inside CI')
+
+#fig3.savefig("NIS_sim",dpi=1200)
 
 # NEES
 
@@ -251,6 +270,7 @@ for ax, tag, NEES, df in zip(ax4, tags, NEESes.T, dfs):
     print(f"ANEES {tag}: {NEES.mean()}")
 
 fig4.tight_layout()
+#fig4.savefig("NEES_sim",dpi=1200)
 
 # %% RMSE
 
@@ -266,11 +286,12 @@ errs = np.vstack((pos_err, heading_err))
 
 for ax, err, tag, ylabel, scaling in zip(ax5, errs, tags[1:], ylabels, scalings):
     ax.plot(err*scaling)
-    ax.set_title(f"{tag}: RMSE {np.sqrt((err**2).mean())*scaling} {ylabel}")
+    ax.set_title(f"{tag}: RMSE {round(np.sqrt((err**2).mean())*scaling,3)} {ylabel}")
     ax.set_ylabel(f"[{ylabel}]")
     ax.grid()
 
 fig5.tight_layout()
+#fig5.savefig("RMSE_sim",dpi = 1200)
 
 # %% Movie time
 
