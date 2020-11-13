@@ -98,14 +98,14 @@ M = len(landmarks)
 # %% Initilize
 Q = np.array([[(7e-2)**2,0,0],
             [0,(7e-2)**2,0],
-            [0,0,(2e-2)**2]])*1e-1# TODO
+            [0,0,(2e-2)**2]])# TODO
 
 R = np.array([[(4e-2)**2, 0],
-            [0, (2e-2)**2]])*2e0# TODO
+            [0, (2e-2)**2]])*2# TODO
 
 doAsso = True
 
-JCBBalphas = np.array([1e-4, 1e-4]) #idk if this is good  # first is for joint compatibility, second is individual
+JCBBalphas = np.array([1e-5, 1e-5]) #idk if this is good  # first is for joint compatibility, second is individual
 # these can have a large effect on runtime either through the number of landmarks created
 # or by the size of the association search space.
 
@@ -122,6 +122,8 @@ NISnorm = np.zeros(K)
 CI = np.zeros((K, 2))
 CInorm = np.zeros((K, 2))
 NEESes = np.zeros((K, 3))
+Assos = np.zeros(K)
+
 
 # For consistency testing
 alpha = 0.05
@@ -160,6 +162,7 @@ for k, z_k in tqdm(enumerate(z[:N])):
     ), "dimensions of mean and covariance do not match"
 
     num_asso = np.count_nonzero(a[k] > -1)
+    Assos[k] = num_asso
 
     CI[k] = chi2.interval(1-alpha, 2 * num_asso)
 
@@ -203,6 +206,10 @@ np.set_printoptions(precision=4, linewidth=100)
 mins = np.amin(landmarks, axis=0)
 maxs = np.amax(landmarks, axis=0)
 
+fig1,ax1 = plt.subplots(num=1,clear=True)
+ax1.plot(Assos)
+
+
 ranges = maxs - mins
 offsets = ranges * 0.2
 
@@ -243,7 +250,7 @@ ax3.plot(NIS[:N], lw=0.5)
 
 ax3.set_title(f'NIS, {round(insideCI.mean()*100,4)}% inside CI')
 
-#fig3.savefig("NIS_sim",dpi=1200)
+fig3.savefig("NISactual_sim",dpi=1200)
 
 
 
@@ -339,6 +346,7 @@ CI_ANIS = np.array(chi2.interval(1 - alpha, total_num_asso * 2)) / NISes.size
 ANIS = NISes.mean()
 print("CI_ANIS:",CI_ANIS)
 print("ANIS:",ANIS,"\n")
+
 
 plt.show()
 # %%

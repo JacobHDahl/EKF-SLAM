@@ -107,15 +107,15 @@ b = 0.5  # laser distance to the left of center
 
 car = Car(L, H, a, b)
 
-sigmas = np.array([(8e-2),(8e-2),(4e-3)])
+sigmas = np.array([(3e-1)**2,(3e-1)**2,(4.4e-2)**2])
 
 CorrCoeff = np.array([[1, 0, 0], [0, 1, 0.9], [0, 0.9, 1]])
 Q = np.diag(sigmas) @ CorrCoeff @ np.diag(sigmas)
-
+print(Q)
 R = np.array([[(4e-2)**2, 0],[0, (4e-2)**2]])
 #*1e-1 10 times slower run-time, worse NIS
 
-JCBBalphas = np.array([1e-3,1e-4]) #TODO
+JCBBalphas = np.array([1e-3,1e-5]) #TODO
 sensorOffset = np.array([car.a + car.L, car.b])
 doAsso = True
 
@@ -140,14 +140,20 @@ mk_first = 1
 mk = mk_first
 t = timeOdo[0]
 
+
+
 # %%  run
-N = K//8
+N = K//5
 #spør studass om de to predictene som ble nevnt på forum. If you predict twice youre doing it wrong
 #spør hvordan redusere landmarks. Går for tregt. Tune alpha only?
 
 doPlot = False
 
 lh_pose = None
+
+# ANIS
+total_num_asso = 0
+NISes = np.full(N, np.nan)
 
 
 if doPlot:
@@ -183,23 +189,29 @@ for k in tqdm(range(N)):
         eta, P = slam.predict(eta,P.copy(),odo) #TODO
         
         z = detectTrees(LASER[mk])
-        start2 = time.time()
         eta, P, NIS[mk], a[mk] = slam.update(eta,P.copy(),z) #TODO
-        end2 = time.time()
+        
 
         #if k%50==0:
             #print("time spent update:", end2-start2)
 
         num_asso = np.count_nonzero(a[mk] > -1)
 
+        
+
         if num_asso > 0:
             NISnorm[mk] = NIS[mk] / (2 * num_asso)
             CInorm[mk] = np.array(chi2.interval(confidence_prob, 2 * num_asso)) / (
                 2 * num_asso
             )
+            CI[mk] = chi2.interval(1-alpha, 2 * num_asso)
+
+            total_num_asso += num_asso
+            NISes[mk] = NIS[mk]
         else:
             NISnorm[mk] = 1
             CInorm[mk].fill(1)
+            CI[mk].fill(1)
 
         xupd[mk] = eta[:3]
 
@@ -236,7 +248,7 @@ for k in tqdm(range(N)):
 
 
 # %% Consistency
-
+print("eta size:",eta.size)
 # NIS
 insideCI = (CInorm[:mk, 0] <= NISnorm[:mk]) * (NISnorm[:mk] <= CInorm[:mk, 1])
 
@@ -245,7 +257,11 @@ ax3.plot(CInorm[:mk, 0], "--")
 ax3.plot(CInorm[:mk, 1], "--")
 ax3.plot(NISnorm[:mk], lw=0.5)
 
-ax3.set_title(f"NIS, {insideCI.mean()*100:.2f}% inside CI")
+ax3.set_title(f"NISnorm, {insideCI.mean()*100:.2f}% inside CI")
+
+fig3.savefig("NISnorm.png",dpi=1200)
+
+
 
 # %% slam
 
@@ -267,9 +283,8 @@ if do_raw_prediction:
 fig6, ax6 = plt.subplots(num=6, clear=True)
 ax6.scatter(*eta[3:].reshape(-1, 2).T, color="r", marker="x")
 ax6.plot(*xupd[mk_first:mk, :2].T)
-ax6.set(
-    title=f"Steps {k}, laser scans {mk-1}, landmarks {len(eta[3:])//2},\nmeasurements {z.shape[0]}, num new = {np.sum(a[mk] == -1)}"
-)
+fig6.savefig("map_noGPS.png",dpi =1200)
+
 
 # %% 
 #Rotating gps
@@ -277,9 +292,9 @@ ax6.set(
 gpsXY = [Lo_m, La_m]
 Lo_m_lim = Lo_m[timeGps < timeOdo[N - 1]]
 La_m_lim = La_m[timeGps < timeOdo[N - 1]]
-theta = -0.22*np.pi/12
+theta = -0.22*np.pi/10
 trans = np.zeros((2,len(Lo_m_lim)))
-trans[0,:] = 2
+trans[0,:] = -5
 trans[1,:] = 10
 gps_rot = np.zeros((len(Lo_m_lim),2))
 
@@ -293,6 +308,33 @@ fig7, ax7 = plt.subplots(num = 7, clear=True)
 ax7.scatter(gps_true[0,:],gps_true[1,:], color="g", marker = ".")
 ax7.plot(*xupd[mk_first:mk, :2].T)
 ax7.scatter(*eta[3:].reshape(-1, 2).T, color="r", marker="x")
+
+fig7.savefig("trajectory_map.png",dpi=1200)
+
+insideCI = (CI[:mk, 0] <= NIS[:mk]) * (NIS[:mk] <= CI[:mk, 1])
+
+fig8, ax8 = plt.subplots(num=8, clear=True)
+ax8.plot(CI[:mk, 0], "--")
+ax8.plot(CI[:mk, 1], "--")
+ax8.plot(NIS[:mk], lw=0.5)
+
+ax8.set_title(f"NIS, {insideCI.mean()*100:.2f}% inside CI")
+fig8.savefig("NIS_values.png",dpi=1200)
+
+fig9, ax9 = plt.subplots(num = 9, clear=True)
+ax9.scatter(gps_true[0,:],gps_true[1,:], color="g", marker = ".")
+ax9.plot(*xupd[mk_first:mk, :2].T)
+#ax9.scatter(*eta[3:].reshape(-1, 2).T, color="r", marker="x")
+
+fig9.savefig("trajectory_map_nolandmarks.png",dpi=1200)
+
+valid_NIS = ~np.isnan(NISes)
+NISes = NISes[valid_NIS]
+# Interval and ANIS
+CI_ANIS = np.array(chi2.interval(1 - alpha, total_num_asso * 2)) / NISes.size
+ANIS = NISes.mean()
+print("CI_ANIS:",CI_ANIS)
+print("ANIS:",ANIS,"\n")
 
 plt.show()
 
